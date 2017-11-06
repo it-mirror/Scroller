@@ -171,15 +171,6 @@ var Scroller = function ( dt, opts ) {
 		"viewportRows": 0,
 
 		/**
-		 * setTimeout reference for state saving, used when state saving is enabled in the DataTable
-		 * and when the user scrolls the viewport in order to stop the cookie set taking too much
-		 * CPU!
-		 *  @type     int
-		 *  @default  0
-		 */
-		"stateTO": null,
-
-		/**
 		 * setTimeout reference for the redraw, used when server-side processing is enabled in the
 		 * DataTables in order to prevent DoSing the server
 		 *  @type     int
@@ -667,15 +658,6 @@ $.extend( Scroller.prototype, {
 
 		/* Update the table's information display for what is now in the viewport */
 		this._fnInfo();
-
-		/* We don't want to state save on every scroll event - that's heavy
-		 * handed, so use a timeout to update the state saving only when the
-		 * scrolling has finished
-		 */
-		clearTimeout( this.s.stateTO );
-		this.s.stateTO = setTimeout( function () {
-			that.s.dt.oApi._fnSaveState( that.s.dt );
-		}, 250 );
 
 		/* calculate top row for state saving, and if needed, redraw */
 		var preRows = Math.ceil( ((this.s.displayBuffer-1)/2) * this.s.viewportRows );
