@@ -912,10 +912,8 @@ $.extend( Scroller.prototype, {
 		// Calculate the boundaries for where a redraw will be triggered by the
 		// scroll event listener
 		var boundaryPx = (iScrollTop - this.s.tableTop) * this.s.boundaryScale;
-		this.s.redrawTop = iScrollTop - boundaryPx;
-		this.s.redrawBottom = iScrollTop + boundaryPx > heights.scroll - heights.viewport - heights.row ?
-			heights.scroll - heights.viewport - heights.row :
-			iScrollTop + boundaryPx;
+		this.s.redrawTop = Math.max(iScrollTop - boundaryPx, 0);
+		this.s.redrawBottom = Math.min(iScrollTop + boundaryPx, heights.scroll - heights.viewport - heights.row);
 
 		this.s.skip = false;
 
