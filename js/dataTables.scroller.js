@@ -170,14 +170,6 @@ var Scroller = function ( dt, opts ) {
 		 */
 		"viewportRows": 0,
 
-		/**
-		 * setTimeout reference for the redraw, used when server-side processing is enabled in the
-		 * DataTables in order to prevent DoSing the server
-		 *  @type     int
-		 *  @default  null
-		 */
-		"drawTO": null,
-
 		heights: {
 			jump: null,
 			page: null,
@@ -208,6 +200,19 @@ var Scroller = function ( dt, opts ) {
 	// @todo The defaults should extend a `c` property and the internal settings
 	// only held in the `s` property. At the moment they are mixed
 	this.s = $.extend( this.s, Scroller.oDefaults, opts );
+
+	/**
+	* setTimeout reference for the redraw, used when server-side processing is enabled in the
+	* DataTables in order to prevent DoSing the server
+	*  @type     int
+	*  @default  null
+	*/
+	this.s.drawThrottle = (function(that) {
+		return that.s.dt.oApi._fnThrottle(function() {
+			that.s.dt.oApi._fnDraw( that.s.dt );
+		}, that.s.serverThrottle);
+	}(this));
+
 
 	// Workaround for row height being read from height object (see above comment)
 	this.s.heights.row = this.s.rowHeight;
@@ -700,23 +705,19 @@ $.extend( Scroller.prototype, {
 			this.s.tableTop = $(this.s.dt.nTable).offset().top;
 			this.s.tableBottom = $(this.s.dt.nTable).height() + this.s.tableTop;
 
-			var draw =  function () {
-				if ( that.s.scrollDrawReq === null ) {
-					that.s.scrollDrawReq = iScrollTop;
-				}
-				that.s.dt._iDisplayStart = iTopRow;
-				that.s.dt.oApi._fnDraw( that.s.dt );
-			};
-
+			if ( that.s.scrollDrawReq === null ) {
+				that.s.scrollDrawReq = iScrollTop;
+			}
+			that.s.dt._iDisplayStart = iTopRow;
+			
 			/* Do the DataTables redraw based on the calculated start point - note that when
 			 * using server-side processing we introduce a small delay to not DoS the server...
 			 */
 			if ( this.s.dt.oFeatures.bServerSide ) {
-				clearTimeout( this.s.drawTO );
-				this.s.drawTO = setTimeout( draw, this.s.serverWait );
+				this.s.drawThrottle();
 			}
 			else {
-				draw();
+				that.s.dt.oApi._fnDraw( that.s.dt );				
 			}
 
 			if ( this.dom.loader && ! this.s.loaderVisible ) {
@@ -1163,7 +1164,7 @@ Scroller.defaults = /** @lends Scroller.defaults */{
 	"rowHeight": "auto",
 
 	/**
-	 * When using server-side processing, Scroller will wait a small amount of time to allow
+	 * When using server-side processing, Scroller will throttle with a small amount of time to allow
 	 * the scrolling to finish before requesting more data from the server. This prevents
 	 * you from DoSing your own server! The wait time can be configured by this parameter.
 	 *  @type     int
@@ -1175,11 +1176,11 @@ Scroller.defaults = /** @lends Scroller.defaults */{
 	 *        "sDom": "frtiS",
 	 *        "bDeferRender": true,
 	 *        "oScroller": {
-	 *          "serverWait": 100
+	 *          "serverThrottle": 100
 	 *        }
 	 *    } );
 	 */
-	"serverWait": 200,
+	"serverThrottle": 200,
 
 	/**
 	 * The display buffer is what Scroller uses to calculate how many rows it should pre-fetch
