@@ -1,6 +1,6 @@
 {
   "name": "@mlink/datatables.net-scroller",
-  "version": "1.4.3",
+  "version": "2.0.0",
   "description": "Virtual scrolling plug-in for DataTables",
   "main": "./js/dataTables.scroller.js",
   "directories": {
