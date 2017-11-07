@@ -208,7 +208,7 @@ var Scroller = function ( dt, opts ) {
 	*  @default  null
 	*/
 	this.s.drawThrottle = (function(that) {
-		return that.s.dt.oApi._fnThrottle(function() {
+		return $.fn.dataTable.util.throttle(function() {
 			that.s.dt.oApi._fnDraw( that.s.dt );
 		}, that.s.serverThrottle);
 	}(this));
@@ -544,7 +544,7 @@ $.extend( Scroller.prototype, {
 		 * scroll
 		 */
 		this.s.ingnoreScroll = true;
-		this.s.stateSaveThrottle = this.s.dt.oApi._fnThrottle( function () {
+		this.s.stateSaveThrottle = $.fn.dataTable.util.throttle( function () {
 			var displayStart = that.s.dt._iDisplayStart;
 			if (typeof(that.s.nextDisplayStart) !== 'undefined') {
 				/* save a display start that fits current Scroller state */
@@ -705,10 +705,10 @@ $.extend( Scroller.prototype, {
 			this.s.tableTop = $(this.s.dt.nTable).offset().top;
 			this.s.tableBottom = $(this.s.dt.nTable).height() + this.s.tableTop;
 
-			if ( that.s.scrollDrawReq === null ) {
-				that.s.scrollDrawReq = iScrollTop;
-			}
-			that.s.dt._iDisplayStart = iTopRow;
+			if (this.s.scrollDrawReq === null ) {
+					this.s.scrollDrawReq = iScrollTop;
+				}
+				this.s.dt._iDisplayStart = iTopRow;
 			
 			/* Do the DataTables redraw based on the calculated start point - note that when
 			 * using server-side processing we introduce a small delay to not DoS the server...
