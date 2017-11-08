@@ -250,22 +250,22 @@
 			$.fn.dataTable.util.throttle(this._fnScroll.bind(this), that.c.serverThrottle) :
 			this._fnScroll.bind(this));
 
-		/* Update the scroller when the DataTable is redrawn */
-		this.dt.on('draw.dt', function () {
-			that._fnDrawCallback.call(that);
-		});
-
-		$(window).on("resize", $.fn.dataTable.util.throttle(function() {
+		var draw = this._fnDrawCallback.bind(this);
+		var adjust = $.fn.dataTable.util.throttle(function() {
 			this.fnMeasure();
 			this.dt.columns.adjust();
 			if (this.s.dt.responsive) {
 				this.dt.responsive.recalc();
 			}
-		}.bind(this),500));
+		}.bind(this), 500);
+
+		$(window).on("resize", adjust);
+		this.dt.on('draw.dt', draw);
 
 		/* Destructor */
 		this.dt.one('destroy.dt', function (e, settings) {
 			$(that.dom.scroller).off('touchstart.DTS scroll.DTS');
+			that.dt.off('draw.dt', draw)
 			$(window).off('resize', adjust);
 			$(that.s.dt.nTableWrapper).removeClass('DTS');
 			that.dom.table.style.position = "";
@@ -715,7 +715,7 @@
 	 *  @name      Scroller.version
 	 *  @static
 	 */
-	Scroller.version = "2.1.1";
+	Scroller.version = "2.1.2";
 
 	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	 * Initialisation
