@@ -166,20 +166,6 @@
 			"selectInfo": false
 		};
 
-		// Hack to render select info without flickering
-		if (dt.oInit.select && (!dt.oInit.select.hasOwnProperty("info") || dt.oInit.select.info)) {
-			if (dt.oInit.select === true) {
-				dt.oInit.select = {
-					style: "os"
-				};
-			}
-			dt.oInit.select.info = false;
-			this.s.selectInfo = true;
-
-			this.dt.on("select deselect", dt.oApi._fnUpdateInfo.bind(null, dt));
-		}
-
-
 		this.c = $.extend(Scroller.oDefaults, opts);
 
 		/**
@@ -240,8 +226,6 @@
 		// Add class to 'announce' that we are a Scroller table
 		$(this.s.dt.nTableWrapper).addClass('DTS');
 
-		this.fnMeasure();
-
 		/* In iOS we catch the touchstart event in case the user tries to scroll
 		 * while the display is already scrolling
 		 */
@@ -258,6 +242,22 @@
 				this.dt.responsive.recalc();
 			}
 		}.bind(this), 500);
+		var fnUpdate = this.s.dt.oApi._fnUpdateInfo.bind(null, this.s.dt);
+
+		// Hack to render select info without flickering
+		if (this.s.dt.oInit.select && (!this.s.dt.oInit.select.hasOwnProperty("info") || this.s.dt.oInit.select.info)) {
+			if (this.s.dt.oInit.select === true) {
+				this.s.dt.oInit.select = {
+					style: "os"
+				};
+			}
+			this.s.dt.oInit.select.info = false;
+			this.s.selectInfo = true;
+
+			this.dt.on("select deselect", fnUpdate);
+		}
+
+		this.fnMeasure();		
 
 		$(window).on("resize", adjust);
 		this.dt.on('draw.dt', draw);
@@ -265,7 +265,8 @@
 		/* Destructor */
 		this.dt.one('destroy.dt', function (e, settings) {
 			$(that.dom.scroller).off('touchstart.DTS scroll.DTS');
-			that.dt.off('draw.dt', draw)
+			that.dt.off('draw.dt', draw);
+			that.dt.off('select deselect', fnUpdate);						
 			$(window).off('resize', adjust);
 			$(that.s.dt.nTableWrapper).removeClass('DTS');
 			that.dom.table.style.position = "";
@@ -369,16 +370,17 @@
 			// For the row-striping classes (odd/even) we want only to start
 			// on evens otherwise the stripes will change between draws and
 			// look rubbish
-			iTopRow--;
+			iTopRow === max ? iTopRow++ : iTopRow--;
 		}
 
 		/* Check if the scroll point is outside the trigger boundary which
 		 * would required a DataTables redraw with changed display start
 		 */
 		if (scrollTop < redrawTop || scrollTop >= redrawBottom) {
-			this.s.redrawTop = iTopRow === 0 ? -1 : (iTopRow + length * (1 - scale) - rows / 2) * rowHeight;
-			this.s.redrawBottom = iTopRow === max ? iTopRow * rowHeight + 1 : (iTopRow + length * scale - rows / 2) * rowHeight;
+			this.s.redrawTop = iTopRow <= 0 ? -1 : (iTopRow + length * (1 - scale) - rows / 2) * rowHeight;
+			this.s.redrawBottom = iTopRow >= max ? (max+length) * rowHeight + 1 : (iTopRow + length * scale - rows / 2) * rowHeight;
 
+			console.log(this.s.redrawBottom, iTopRow, max, scrollTop, this.s.redrawTop)
 			// Do the DataTables redraw based on the calculated start point,
 			// except if _fnScroll is called as part of the initialisation
 			if (redrawBottom !== 0 || redrawTop !== 0) {
@@ -752,11 +754,11 @@
 
 		var
 			settings = this.context[0],
-			start = settings.oScroller ? Math.floor(settings.oScroller.dom.scroller.scrollTop / settings.oScroller.s.rowHeight) : settings._iDisplayStart,
+			start = settings.oScroller ? Math.ceil(settings.oScroller.dom.scroller.scrollTop / settings.oScroller.s.rowHeight) : settings._iDisplayStart,
 			len = settings.oScroller ? settings.oScroller.s.viewportRows : settings.oFeatures.bPaginate ? settings._iDisplayLength : -1,
 			visRecords = settings.fnRecordsDisplay(),
 			all = len === -1;
-
+			
 		return {
 			"page": all ? 0 : Math.floor(start / len),
 			"pages": all ? 1 : Math.ceil(visRecords / len),
