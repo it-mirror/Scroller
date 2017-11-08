@@ -337,7 +337,7 @@
 			return;
 		}
 		$(".dataTables_scrollBody", this.s.dt.nTableWrapper).css(this.s.dt.oInit.scrollCollapse ? 'max-height' : 'height',"0");		
-		var height = $(this.s.dt.nTableWrapper).parent().innerHeight()-$(this.s.dt.nTableWrapper).outerHeight();
+		var height = $(this.s.dt.nTableWrapper).parent().innerHeight()-$(this.s.dt.nTableWrapper).outerHeight()-10;
 		$(".dataTables_scrollBody", this.s.dt.nTableWrapper).css(this.s.dt.oInit.scrollCollapse ? 'max-height' : 'height',Math.floor(height)+"px");
 	}
 
@@ -715,7 +715,7 @@
 	 *  @name      Scroller.version
 	 *  @static
 	 */
-	Scroller.version = "2.1.0";
+	Scroller.version = "2.1.1";
 
 	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	 * Initialisation
