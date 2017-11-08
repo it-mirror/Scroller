@@ -717,7 +717,7 @@
 	 *  @name      Scroller.version
 	 *  @static
 	 */
-	Scroller.version = "2.1.2";
+	Scroller.version = "2.1.3";
 
 	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	 * Initialisation
