@@ -380,7 +380,6 @@
 			this.s.redrawTop = iTopRow <= 0 ? -1 : (iTopRow + length * (1 - scale) - rows / 2) * rowHeight;
 			this.s.redrawBottom = iTopRow >= max ? (max+length) * rowHeight + 1 : (iTopRow + length * scale - rows / 2) * rowHeight;
 
-			console.log(this.s.redrawBottom, iTopRow, max, scrollTop, this.s.redrawTop)
 			// Do the DataTables redraw based on the calculated start point,
 			// except if _fnScroll is called as part of the initialisation
 			if (redrawBottom !== 0 || redrawTop !== 0) {
@@ -448,10 +447,6 @@
 		var height = heights * Math.max(this.s.dt.fnRecordsDisplay(), 1) + 'px';
 		if (height !== this.dom.force.style.height) {
 			this.dom.force.style.height = height;
-			this.dt.columns.adjust();
-			if (this.s.dt.responsive) {
-				this.dt.responsive.recalc();
-			}
 		}
 
 		this.dom.table.style.top = (displayStart * heights) + 'px';		
@@ -717,7 +712,7 @@
 	 *  @name      Scroller.version
 	 *  @static
 	 */
-	Scroller.version = "2.1.3";
+	Scroller.version = "2.1.4";
 
 	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	 * Initialisation
